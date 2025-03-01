@@ -41,16 +41,13 @@ class Controller:
     def get_error(self, ref_pos, joint_positions):
         # Computes the error between the current and reference position
 
-        # Subscribe to reference position 
-        # ------------------------------------------------------- to implement later on
-        
-        # Loop to compare error
+        # To avoid issues if 6_Link is not defined
         if "6_Link" not in joint_positions:
             rospy.logwarn("End effector position unavailable.")
             return none
 
         current_position = joint_positions['6_Link']["position"]
-        error = [ref_pos[i] - current_position[i] for i in range(3)]
+        error = [ref_pos[i] - current_position[i] for i in range(3)] #Error in x, y, z 
         rospy.loginfo(f"Error: {error}")
             
         # Store error history for integral term
@@ -93,13 +90,11 @@ class Controller:
         msg.data = control_signal
         self.pub.publish(msg)
 
-
-
     def run(self):
         # Main loop to continuously compute and publish control signals
         rospy.loginfo("Collecting joint information...")
-        rate = rospy.Rate(10) #10
-        ref_pos = [0.094, -0.063, 0.242]
+        rate = rospy.Rate(10) #10 Hz
+        ref_pos = [0.094, -0.063, 0.242] #to be changed later
 
         while not rospy.is_shutdown():
             positions = self.get_joint_positions()
