@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import rospy
 import tf
 from sensor_msgs.msg import JointState
@@ -21,7 +23,7 @@ class Controller:
         self.error_history = []  # Stores all errors for integral term
         self.integral_limit = 10.0 
 
-        self.pub = rospy.Publisher('control', Float32MultiArray, queue_size=10)
+        self.pub = rospy.Publisher('/control', Float32MultiArray, queue_size=10)
         rospy.sleep(2)  # Give some time for TF to populate
 
 
@@ -41,13 +43,16 @@ class Controller:
     def get_error(self, ref_pos, joint_positions):
         # Computes the error between the current and reference position
 
-        # To avoid issues if 6_Link is not defined
+        # Subscribe to reference position 
+        # ------------------------------------------------------- to implement later on
+        
+        # Loop to compare error
         if "6_Link" not in joint_positions:
             rospy.logwarn("End effector position unavailable.")
             return none
 
         current_position = joint_positions['6_Link']["position"]
-        error = [ref_pos[i] - current_position[i] for i in range(3)] #Error in x, y, z 
+        error = [ref_pos[i] - current_position[i] for i in range(3)]
         rospy.loginfo(f"Error: {error}")
             
         # Store error history for integral term
@@ -63,9 +68,9 @@ class Controller:
         # Implements a PID controller to control the robot arm
         
         # Define PID parameters
-        kp = 10
-        ki = 1
-        kd = 1
+        kp = 5
+        ki = 0.1
+        kd = 0.1
 
         # Initializing lists to store proportional, integral and derivative terms
         proportional = [0.0] * 3
@@ -90,11 +95,13 @@ class Controller:
         msg.data = control_signal
         self.pub.publish(msg)
 
+
+
     def run(self):
         # Main loop to continuously compute and publish control signals
         rospy.loginfo("Collecting joint information...")
-        rate = rospy.Rate(10) #10 Hz
-        ref_pos = [0.094, -0.063, 0.242] #to be changed later
+        rate = rospy.Rate(10) #10
+        ref_pos = [0.094, -0.063, 0.242]
 
         while not rospy.is_shutdown():
             positions = self.get_joint_positions()
