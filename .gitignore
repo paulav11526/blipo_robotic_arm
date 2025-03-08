@@ -1,0 +1,3 @@
+../*  # Ignore everything outside this repo
+!jetcobot_moveit/
+!astra_tracker/
