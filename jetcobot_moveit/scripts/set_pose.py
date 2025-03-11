@@ -38,7 +38,7 @@ if __name__ == '__main__':
     sleep(1)
     # Create pose instance
     pos = Pose()
-    
+    '''
     # Back
     # Position
     pos.position.x = -0.226 
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     else:
         rospy.loginfo("plan error")
         
-    
+    '''
         
     moveit_commander.roscpp_shutdown()
     moveit_commander.os._exit(0)
