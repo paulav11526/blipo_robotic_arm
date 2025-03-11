@@ -157,7 +157,7 @@ void ImageConverter::depthCb(const sensor_msgs::ImageConstPtr &msg) {
         dist_val[4] = depthimage.at<float>(center_y, center_x)/1000;
         int num_depth_points = 5;
         for (int i = 0; i < 5; i++) {
-            if (dist_val[i] > 0.4 && dist_val[i] < 10.0) minDist += dist_val[i];
+            if (dist_val[i] > 0.26 && dist_val[i] < 10.0) minDist += dist_val[i];
             else num_depth_points--;
         }
         minDist /= num_depth_points;
