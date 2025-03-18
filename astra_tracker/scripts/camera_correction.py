@@ -13,6 +13,9 @@ class CameraCorrection:
         z_actual = (msg.z * 0.8090) - 0.0342
         rospy.loginfo(f'Corrected depth: {z_actual}')
 
+    def pixel_correction(self, msg):
+        
+
 
     def run(self):
         rospy.loginfo("Camera_correction node running...")

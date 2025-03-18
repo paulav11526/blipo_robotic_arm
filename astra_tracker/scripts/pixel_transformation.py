@@ -6,10 +6,10 @@ import numpy as np
 
 # 2D pixel coordinates
 points_2D = np.array([
-                        (30, 195),  # Left Bottom
-                        (219,195),  # Right Bottom
-                        (30, 64),  # Left Top
-                        (219, 64),  # Right Top
+                        (164, 238),  # Left Bottom
+                        (417,240),  # Right Bottom
+                        (162, 50),  # Left Top
+                        (421, 59),  # Right Top
                       ], dtype="double")
                       
 # 3D world coordiantes 
@@ -25,7 +25,7 @@ points_3D = np.array([
 cameraMatrix = np.array([
                         (481.1706, 0, 319.82166),
 						(0, 476.0982, 234.1129), 
-						(0, 0, 1)], dytpe="double")
+						(0, 0, 1)], dtype="double")
 
 # null values 
 dist_coeffs = np.zeros((4,1))
@@ -37,7 +37,7 @@ retval, rvec, tvec = cv2.solvePnP(points_3D, points_2D, cameraMatrix,
                                   useExtrinsicGuess=None, flags=None)
 if retval: 
 	rvec, _ = cv2.Rodrigues(rvec) # rotation matrix only
-	np.save('cam_rotation.npy', rvec)
-	np.save('cam_translation.npy', tvec)
+	np.save('cam_rotation1.npy', rvec)
+	np.save('cam_translation1.npy', tvec)
 
 print("Calibration ended")
