@@ -23,12 +23,12 @@ points_3D = np.array([
 # camera intrinsic parameter 
 # from camera_info.yaml
 cameraMatrix = np.array([
-                        (481.1706, 0, 319.82166),
-						(0, 476.0982, 234.1129), 
-						(0, 0, 1)], dtype="double")
+                        (454.9405822753906, 0.0, 330.1873779296875),
+						(0.0, 454.9405822753906, 238.76426696777344), 
+						(0.0, 0.0, 1.0)], dtype="double")
 
 # null values 
-dist_coeffs = np.zeros((4,1))
+dist_coeffs = np.array([0.05183049291372299, -0.07166079431772232, 0.0, 0.0, 0.0], dtype="double")
 
 #solvePnp 
 print("Starting calibration")
@@ -37,7 +37,7 @@ retval, rvec, tvec = cv2.solvePnP(points_3D, points_2D, cameraMatrix,
                                   useExtrinsicGuess=None, flags=None)
 if retval: 
 	rvec, _ = cv2.Rodrigues(rvec) # rotation matrix only
-	np.save('cam_rotation1.npy', rvec)
-	np.save('cam_translation1.npy', tvec)
+	np.save('cam_rotation2.npy', rvec)
+	np.save('cam_translation2.npy', tvec)
 
 print("Calibration ended")
