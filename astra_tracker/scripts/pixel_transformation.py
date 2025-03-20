@@ -6,30 +6,31 @@ import numpy as np
 
 # 2D pixel coordinates
 points_2D = np.array([
-                        (164, 238),  # Left Bottom
-                        (417,240),  # Right Bottom
-                        (162, 50),  # Left Top
-                        (421, 59),  # Right Top
+                        (192, 328),  # Left Bottom
+                        (436, 320),  # Right Bottom
+                        (186, 152),  # Left Top
+                        (432, 146),  # Right Top
                       ], dtype="double")
                       
 # 3D world coordiantes 
 points_3D = np.array([
-                      (3.3, 18.3, 0.0),     #Left bottom 
-                      (24.3, 18.3, 0.0),    # Right Bottom   
-                      (3.3, 3.3, 0.0),      # Left Top
-                      (24.3, 3.3, 0.0)      # Right Top
+                      (-0.105, -0.075, 0.0),     #Left bottom 
+                      (0.105, -0.075, 0.0),    # Right Bottom   
+                      (-0.105, 0.075, 0.0),      # Left Top
+                      (0.105, 0.075, 0.0)      # Right Top
                      ], dtype="double")
 
 # camera intrinsic parameter 
-# from camera_info.yaml
+# from rostopic echo /camera/color/camera_info
 cameraMatrix = np.array([
                         (454.9405822753906, 0.0, 330.1873779296875),
 						(0.0, 454.9405822753906, 238.76426696777344), 
 						(0.0, 0.0, 1.0)], dtype="double")
+#print(cameraMatrix)
 
 # null values 
-dist_coeffs = np.array([0.05183049291372299, -0.07166079431772232, 0.0, 0.0, 0.0], dtype="double")
-
+dist_coeffs = np.array([0.05183049291372299, -0.07166079431772232, 0.0, 0.0], dtype="double")
+print(dist_coeffs)
 #solvePnp 
 print("Starting calibration")
 retval, rvec, tvec = cv2.solvePnP(points_3D, points_2D, cameraMatrix, 
@@ -37,7 +38,12 @@ retval, rvec, tvec = cv2.solvePnP(points_3D, points_2D, cameraMatrix,
                                   useExtrinsicGuess=None, flags=None)
 if retval: 
 	rvec, _ = cv2.Rodrigues(rvec) # rotation matrix only
-	np.save('cam_rotation2.npy', rvec)
-	np.save('cam_translation2.npy', tvec)
+	np.save('cam_rot1.npy', rvec)
+	np.save('cam_trans1.npy', tvec)
+
+projected_points, _ = cv2.projectPoints(points_3D, rvec, tvec, cameraMatrix, dist_coeffs)
+print(projected_points)
+
+print("rvec: \n", rvec, "tvec: \n",tvec)
 
 print("Calibration ended")
