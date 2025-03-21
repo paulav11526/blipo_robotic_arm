@@ -120,7 +120,7 @@ void ImageConverter::imageCb(const sensor_msgs::ImageConstPtr &msg) {
         if ((double)minDist < 0.0) text_z.append("inf");
         else { 
             text_z.append(to_string((double)(minDist)));
-            text_z.append("cm");
+            text_z.append("m");
             msg.z = minDist;}
     
         putText(rgbimage, text_x.c_str(), Point(center_x + 10, center_y - 13), FONT_HERSHEY_SIMPLEX, 0.5,

@@ -38,7 +38,7 @@ if __name__ == '__main__':
     sleep(1)
     # Create pose instance
     pos = Pose()
-    '''
+  
     # Back
     # Position
     pos.position.x = -0.226 
@@ -59,9 +59,7 @@ if __name__ == '__main__':
         jetcobot.execute(plan[1])
     else:
         rospy.loginfo("plan error")
-        
-    '''
-        
+                
     moveit_commander.roscpp_shutdown()
     moveit_commander.os._exit(0)
     sleep(1)

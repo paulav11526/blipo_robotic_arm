@@ -2,11 +2,13 @@ import cv2
 import numpy as np 
 import os
 
+# This file is used to get the pixel coordinates of the camera frame from mouse clicks
+
 def mouse_callback(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:  # Only print when the left mouse button is clicked      
         print(f"Mouse click at x: {x}, y: {y}")
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0) # If this doesn't work, use ls /dev/video*. If error, then try running this file without launching the Gemini camera
     
 
 # Set resolution explicitly (optional)

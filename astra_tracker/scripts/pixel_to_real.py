@@ -17,7 +17,7 @@ points_3D = np.array([
                       (0.105, 0.075, 0.0)      # Right Top
                      ], dtype="double")
 
-# camera intrinsic parameter 
+# camera intrinsic parameters 
 # from rostopic echo /camera/color/camera_info
 cameraMatrix = np.array([
                         (454.9405822753906, 0.0, 330.1873779296875),
