@@ -5,6 +5,7 @@ import rospy, sys
 from time import sleep
 import moveit_commander
 from geometry_msgs.msg import Pose
+from geometry_msgs.msg import Point
 from copy import deepcopy
 from moveit_commander import MoveGroupCommander, PlanningSceneInterface
 from tf.transformations import quaternion_from_euler
@@ -17,6 +18,9 @@ class Waypoints:
         rospy.init_node('cartesian_plan_py')
         scene = PlanningSceneInterface()
         
+        # Subscribing to base coordinates
+        rospy.Subscriber("base_coordinates", Point, self.base_callback)
+
         # Initialize the robotic arm
         self.jetcobot = MoveGroupCommander('arm_group')
         # When motion planning fails, re-planning is allowed
@@ -32,15 +36,28 @@ class Waypoints:
         self.jetcobot.set_max_acceleration_scaling_factor(1.0)
         
         # Setting 'init' as the initial pose (home position)
+        self.pos = Pose()
         rospy.loginfo("Home pose")
         self.jetcobot.set_named_target("init")
         self.jetcobot.go()
         sleep(0.5)
 
+    def base_callback(self, msg):
+        # Set the target point
+        rospy.loginfo("Setting target pose")
+        self.pos.position.x = msg.x
+        self.pos.position.y = msg.y
+        self.pos.position.z = msg.z
+        self.pos.orientation.x = 0.0
+        self.pos.orientation.y = 0.0
+        self.pos.orientation.z = 0.0
+        self.pos.orientation.w = 1.0
+
+    
     def plan_pose(self, pose):
         # Set the target point
         rospy.loginfo("Setting target pose")
-        self.jetcobot.set_pose_target(pos)
+        self.jetcobot.set_pose_target(pose)
         plan = self.jetcobot.plan()
 
         planned_trajectory = plan[1] # Contains the planned trajectory
@@ -74,21 +91,8 @@ class Waypoints:
 
 
 if __name__ == "__main__":
-    # Setting target pose
-
-    # # Need to integrate camera info 
-    pos = Pose()
-    # Back Position
-    pos.position.x = -0.226 
-    pos.position.y = -0.061
-    pos.position.z = 0.3
-    pos.orientation.x = -0.008
-    pos.orientation.y = -0.591
-    pos.orientation.z = -0.004
-    pos.orientation.w = 0.807
-
     run = Waypoints()
-    trajectory = run.plan_pose(pos)
+    trajectory = run.plan_pose(run.self.pos)
     waypoints = run.plan_waypoints(trajectory)
     run.execute(waypoints)
 
