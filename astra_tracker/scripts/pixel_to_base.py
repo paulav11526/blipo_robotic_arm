@@ -29,7 +29,7 @@ class PixelToBase:
 
         # Transformation matrix: camera frame wrt Link 6 - T_6c
         self.T_6c = np.array([
-                        [0.0, 0.0, 1.0, 0.014],
+                        [0.0, 0.0, 1.0, -0.067],
                         [-1.0, 0.0, 0.0, 0.0],
                         [0.0, -1.0, 0.0, 0.12],
                         [0.0, 0.0, 0.0, 1.0]
