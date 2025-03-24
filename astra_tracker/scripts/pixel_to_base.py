@@ -31,7 +31,7 @@ class PixelToBase:
         self.T_6c = np.array([
                         [0.0, 0.0, 1.0, -0.067],
                         [-1.0, 0.0, 0.0, 0.0],
-                        [0.0, -1.0, 0.0, 0.12],
+                        [0.0, -1.0, 0.0, 0.],
                         [0.0, 0.0, 0.0, 1.0]
                         ], dtype=np.float32)
     
@@ -47,6 +47,7 @@ class PixelToBase:
             T = np.identity(4)
             T[:3, :3] = rotation_matrix[:3, :3]
             T[:3, 3] = trans[:3]    
+            rospy.loginfo(f"Transform: {T}")
 
             # Return the transformation matrix between base frame and Link 6
             return T    
@@ -62,8 +63,10 @@ class PixelToBase:
             return
             
         else:
-            z_actual = (msg.z * 0.8090) - 0.0342 # Depth correction
+            #z_actual = (msg.z * 0.8090) - 0.0342 # Depth correction (calibration 1)
+            z_actual = (msg.z * 0.7739) + 0.0078
             self.latest_pixel = (msg.x, msg.y, z_actual)  # Store pixel coordinates
+            rospy.loginfo(f'z_actual: {z_actual}')
 
        
     def pixel_to_base_transform(self, u, v, Z_c, T_b6):
@@ -82,6 +85,7 @@ class PixelToBase:
 
         # Transformation matrix: camera frame wrt base frame
         T_bc = np.dot(T_b6, self.T_6c)
+        rospy.loginfo(f"T between camera wrt base frame: {T_bc}")
 
         # Get Point in base frame
         P_b = np.dot(T_bc, P_c)

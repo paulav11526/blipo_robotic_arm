@@ -39,15 +39,15 @@ class Waypoints:
         self.jetcobot.set_max_acceleration_scaling_factor(1.0)
         
         # Setting 'init' as the initial pose (home position)
-        rospy.loginfo("Home pose")
+        '''rospy.loginfo("Home pose")
         self.jetcobot.set_named_target("init")
         self.jetcobot.go()
-        sleep(0.5)
+        sleep(0.5)'''
 
 
     def base_callback(self, msg):
         # Store received base coordinates
-        rospy.loginfo("Base coordinates received")
+        #rospy.loginfo("Base coordinates received")
         self.pos.position.x = msg.x
         self.pos.position.y = msg.y
         self.pos.position.z = msg.z
