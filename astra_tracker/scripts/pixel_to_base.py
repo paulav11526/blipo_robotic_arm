@@ -8,6 +8,7 @@ import math
 from geometry_msgs.msg import Point
 from transforms3d.quaternions import quat2mat
 from scipy.spatial.transform import Rotation as R
+from geometry_msgs.msg import PointStamped
 
 
 class PixelToBase:
@@ -17,7 +18,7 @@ class PixelToBase:
         self.tf_listener = tf.TransformListener()
         self.base_pub = rospy.Publisher("base_coordinates", Point, queue_size=10)
         rospy.Subscriber("KCF_Tracker/coordinates", Point, self.pixel_callback)
-
+        self.camera_pub = rospy.Publisher('/camera_point', PointStamped, queue_size=10)
         self.latest_pixel = None
 
         # Camera intrinsic parameters
@@ -41,14 +42,13 @@ class PixelToBase:
         try:
             self.tf_listener.waitForTransform('base_link', '6_Link', rospy.Time(0), rospy.Duration(1.0))
             (trans, rot) = self.tf_listener.lookupTransform('base_link', '6_Link', rospy.Time(0))
-            rospy.loginfo(f"rotation matrix as quat: {rot}")
+            #rospy.loginfo(f"rotation matrix as quat: {rot}")
             
             # Convert quaternion to rotation matrix
-            # rotation_matrix = quat2mat(rot)
-
+          
             r = R.from_quat(rot)
             rotation_matrix = r.as_matrix()
-            rospy.loginfo(f"Rotation Matrix: {rotation_matrix}")
+            #rospy.loginfo(f"Rotation Matrix: {rotation_matrix}")
             # Convert translation and rotation to transformation matrix
             T = np.identity(4)
             T[:3, :3] = rotation_matrix
@@ -71,6 +71,7 @@ class PixelToBase:
         else:
             #z_actual = (msg.z * 0.8090) - 0.0342 # Depth correction (calibration 1)
             z_actual = (msg.z * 0.8016) - 0.0041 # Depth correction (calibration 2)
+            #z_actual = (np.square(msg.z) * 0.0235) + (msg.z * 0.7776) + 0.0017 # Depth correction (calibration 3)
             self.latest_pixel = (msg.x, msg.y, z_actual)  # Store pixel coordinates
             rospy.loginfo(f'z_actual: {z_actual}')
 
@@ -96,8 +97,18 @@ class PixelToBase:
         P_b = np.dot(T_b6, P_6)
         rospy.loginfo(f"P between camera wrt base frame: {P_b}")
 
+        point_msg = PointStamped()
+        point_msg.header.frame_id = "camera_link"
+        point_msg.header.stamp = rospy.Time.now()
+        point_msg.point.x = P_c[0]
+        point_msg.point.y = P_c[1]
+        point_msg.point.z = P_c[2]
+        self.camera_pub.publish(point_msg)
+
         # Get Point in base frame
         # P_b = np.dot(T_bc, P_c)
+
+        
 
         return P_b[:3]  # Return only x, y, z
     
