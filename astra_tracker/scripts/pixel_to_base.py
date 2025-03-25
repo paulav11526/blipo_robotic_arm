@@ -7,6 +7,7 @@ import tf
 import math
 from geometry_msgs.msg import Point
 from transforms3d.quaternions import quat2mat
+from scipy.spatial.transform import Rotation as R
 
 
 class PixelToBase:
@@ -30,24 +31,29 @@ class PixelToBase:
         # Transformation matrix: camera frame wrt Link 6 - T_6c
         self.T_6c = np.array([
                         [0.0, 0.0, 1.0, -0.067],
-                        [-1.0, 0.0, 0.0, 0.0],
-                        [0.0, -1.0, 0.0, 0.],
+                        [1.0, 0.0, 0.0, 0.0],
+                        [0.0, -1.0, 0.0, 0.12],
                         [0.0, 0.0, 0.0, 1.0]
                         ], dtype=np.float32)
     
     def get_transform(self):
+        
         try:
             self.tf_listener.waitForTransform('base_link', '6_Link', rospy.Time(0), rospy.Duration(1.0))
             (trans, rot) = self.tf_listener.lookupTransform('base_link', '6_Link', rospy.Time(0))
+            rospy.loginfo(f"rotation matrix as quat: {rot}")
             
             # Convert quaternion to rotation matrix
-            rotation_matrix = quat2mat(rot)
+            # rotation_matrix = quat2mat(rot)
 
+            r = R.from_quat(rot)
+            rotation_matrix = r.as_matrix()
+            rospy.loginfo(f"Rotation Matrix: {rotation_matrix}")
             # Convert translation and rotation to transformation matrix
             T = np.identity(4)
-            T[:3, :3] = rotation_matrix[:3, :3]
+            T[:3, :3] = rotation_matrix
             T[:3, 3] = trans[:3]    
-            rospy.loginfo(f"Transform: {T}")
+            rospy.loginfo(f"T between base link and 6_Link: {T}")
 
             # Return the transformation matrix between base frame and Link 6
             return T    
@@ -64,7 +70,7 @@ class PixelToBase:
             
         else:
             #z_actual = (msg.z * 0.8090) - 0.0342 # Depth correction (calibration 1)
-            z_actual = (msg.z * 0.7739) + 0.0078
+            z_actual = (msg.z * 0.8016) - 0.0041 # Depth correction (calibration 2)
             self.latest_pixel = (msg.x, msg.y, z_actual)  # Store pixel coordinates
             rospy.loginfo(f'z_actual: {z_actual}')
 
@@ -82,19 +88,22 @@ class PixelToBase:
 
         # Homogeneous coordinates
         P_c = np.vstack((P_c, np.ones((1, P_c.shape[1]))))
+        rospy.loginfo(f"camera coordinate: {P_c}")
 
         # Transformation matrix: camera frame wrt base frame
-        T_bc = np.dot(T_b6, self.T_6c)
-        rospy.loginfo(f"T between camera wrt base frame: {T_bc}")
+        P_6 = np.dot(self.T_6c, P_c)
+        rospy.loginfo(f"camera coordinate in 6_Link frame: {P_6}")
+        P_b = np.dot(T_b6, P_6)
+        rospy.loginfo(f"P between camera wrt base frame: {P_b}")
 
         # Get Point in base frame
-        P_b = np.dot(T_bc, P_c)
+        # P_b = np.dot(T_bc, P_c)
 
         return P_b[:3]  # Return only x, y, z
     
     def run(self):
         rospy.loginfo("Collecting pixel information...")
-        rate = rospy.Rate(10)  
+        rate = rospy.Rate(2)  
         
         while not rospy.is_shutdown():
             if self.latest_pixel is not None:  # Check if pixel data is available

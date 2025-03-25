@@ -15,9 +15,10 @@ class Waypoints:
         moveit_commander.roscpp_initialize(sys.argv)
         
         # Initializing the node
-        rospy.init_node('cartesian_plan_py')
+        rospy.init_node('waypoints_py')
         scene = PlanningSceneInterface()
 
+        # Subscribing to base coordinates
         self.pos = Pose()
         self.received_coordinates = False # Flag to check if coordinates have been received
         
@@ -65,7 +66,7 @@ class Waypoints:
 
     def plan_pose(self, pose):
         # Set the target point
-        rospy.loginfo("Setting target pose")
+        rospy.loginfo("Planning pose")
         self.jetcobot.set_pose_target(pose)
         plan = self.jetcobot.plan()
 
