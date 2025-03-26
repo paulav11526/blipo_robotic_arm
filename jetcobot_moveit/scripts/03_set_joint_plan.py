@@ -30,7 +30,7 @@ if __name__ == '__main__':
     jetcobot.go()
     sleep(0.5)
     # Set the target point radian
-    joints = [1.9765225621080145, -1.2912211225228438, 1.8984548883544226, -1.1857277805913173, -0.6667299450578678, 0.22747361348948375]
+    joints = [1.567, -1.857, -1.069, -0.08, 0.0, 0.0]
     jetcobot.set_joint_value_target(joints)
     # Execute multiple times to improve the success rate
     for i in range(5):

@@ -36,14 +36,15 @@ if __name__ == '__main__':
     # 创建位姿实例
     pos = Pose()
     # 设置具体的位置
-    pos.position.x = 0.03193717954023739
-    pos.position.y = 0.1596810159055088
-    pos.position.z = 0.2616602376176956
+    pos.position.x = 0.331
+    pos.position.y = 0.242
+    pos.position.z = 0.07
     # 四元素
-    pos.orientation.x = 5.990905825550542e-05
-    pos.orientation.y = 3.45385976533631e-05
-    pos.orientation.z = -2.9922657689618833e-05
-    pos.orientation.w = 0.9999999971613122
+    pos.orientation.x = 0
+    pos.orientation.y = 0
+    pos.orientation.z = 0
+    pos.orientation.w = 1
+
     # 设置目标点
     jetcobot.set_pose_target(pos)
     plan = jetcobot.plan()
