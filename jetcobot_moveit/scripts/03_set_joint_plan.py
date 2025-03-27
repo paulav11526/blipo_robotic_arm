@@ -28,9 +28,11 @@ if __name__ == '__main__':
     # Set "init" as the initial point (the home position)
     jetcobot.set_named_target("init")
     jetcobot.go()
-    sleep(0.5)
+    sleep(5)
     # Set the target point radian
-    joints = [1.567, -1.857, -1.069, -0.08, 0.0, 0.0]
+    #joints_deg = [-5, 50, -120, 70, 5, 0]
+    #joints = [i * DE2RA for i in joints_deg]
+    joints = [0.02, -1.166, 0.587, 0.587, -0.040, 0.026]
     jetcobot.set_joint_value_target(joints)
     # Execute multiple times to improve the success rate
     for i in range(5):
