@@ -32,9 +32,9 @@ if __name__ == '__main__':
 
     # Define target pose
     pos = Pose()
-    pos.position.x = 0.2091
-    pos.position.y = -0.06652 
-    pos.position.z = 0.413585
+    pos.position.x = 0.34615096
+    pos.position.y = -0.04650332
+    pos.position.z = 0.47129924
     pos.orientation.x = 0
     pos.orientation.y = -0.0
     pos.orientation.z = -0.0
