@@ -28,24 +28,34 @@ class PixelToBase:
                             (0.0, 0.0, 1.0)], dtype="double")
         
         self.dist_coeffs = np.array([0.05183049291372299, -0.07166079431772232, 0.0, 0.0], dtype="double")
-   
+
+        # Transformation matrix: camera frame wrt Link 6 - T_6c
+        self.T_6c = np.array([
+                        [0.0, 0.0, 1.0, -0.067],
+                        [1.0, 0.0, 0.0, 0.0],
+                        [0.0, -1.0, 0.0, 0.12],
+                        [0.0, 0.0, 0.0, 1.0]
+                        ], dtype=np.float32)
+    
     def get_transform(self):
         
         try:
-            self.tf_listener.waitForTransform('base_link', 'camera_link', rospy.Time(0), rospy.Duration(1.0))
-            (trans, rot) = self.tf_listener.lookupTransform('base_link', 'camera_link', rospy.Time(0))
-                      
+            self.tf_listener.waitForTransform('base_link', '6_Link', rospy.Time(0), rospy.Duration(1.0))
+            (trans, rot) = self.tf_listener.lookupTransform('base_link', '6_Link', rospy.Time(0))
+            #rospy.loginfo(f"rotation matrix as quat: {rot}")
+            
             # Convert quaternion to rotation matrix
+          
             r = R.from_quat(rot)
             rotation_matrix = r.as_matrix()
-            
+            #rospy.loginfo(f"Rotation Matrix: {rotation_matrix}")
             # Convert translation and rotation to transformation matrix
             T = np.identity(4)
             T[:3, :3] = rotation_matrix
             T[:3, 3] = trans[:3]    
-            rospy.loginfo(f"T between base link and camera_link: {T}")
+            rospy.loginfo(f"T between base link and 6_Link: {T}")
 
-            # Return the transformation matrix between base frame and camera
+            # Return the transformation matrix between base frame and Link 6
             return T    
 
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
@@ -66,7 +76,7 @@ class PixelToBase:
             rospy.loginfo(f'z_actual: {z_actual}')
 
        
-    def pixel_to_base_transform(self, u, v, Z_c, T_bc):
+    def pixel_to_base_transform(self, u, v, Z_c, T_b6):
 
         # Make a pixel array
         pixel = np.array([[[u, v]]], dtype=np.float32)
@@ -81,8 +91,10 @@ class PixelToBase:
         P_c = np.vstack((P_c, np.ones((1, P_c.shape[1]))))
         rospy.loginfo(f"camera coordinate: {P_c}")
 
-        # Transformation matrix: camera frame wrt base frame   
-        P_b = np.dot(T_bc, P_c )
+        # Transformation matrix: camera frame wrt base frame
+        P_6 = np.dot(self.T_6c, P_c)
+        rospy.loginfo(f"camera coordinate in 6_Link frame: {P_6}")
+        P_b = np.dot(T_b6, P_6)
         rospy.loginfo(f"P wrt base frame: {P_b}")
 
         point_msg = PointStamped()
@@ -91,7 +103,12 @@ class PixelToBase:
         point_msg.point.x = P_c[0]
         point_msg.point.y = P_c[1]
         point_msg.point.z = P_c[2]
-        self.camera_pub.publish(point_msg)       
+        self.camera_pub.publish(point_msg)
+
+        # Get Point in base frame
+        # P_b = np.dot(T_bc, P_c)
+
+        
 
         return P_b[:3]  # Return only x, y, z
     
