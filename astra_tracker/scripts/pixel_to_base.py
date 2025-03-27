@@ -95,7 +95,7 @@ class PixelToBase:
         P_6 = np.dot(self.T_6c, P_c)
         rospy.loginfo(f"camera coordinate in 6_Link frame: {P_6}")
         P_b = np.dot(T_b6, P_6)
-        rospy.loginfo(f"P between camera wrt base frame: {P_b}")
+        rospy.loginfo(f"P wrt base frame: {P_b}")
 
         point_msg = PointStamped()
         point_msg.header.frame_id = "camera_link"
