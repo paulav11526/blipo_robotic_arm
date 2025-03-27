@@ -11,6 +11,8 @@ def mouse_callback(event, x, y, flags, param):
 cap = cv2.VideoCapture(0) # If this doesn't work, use ls /dev/video*. If error, then try running this file without launching the Gemini camera
     
 
+# cap = cv2.VideoCapture(1)
+
 # Set resolution explicitly (optional)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
@@ -31,6 +33,8 @@ while True:
     if k == 27:  # Press ESC to exit
         break
 
+
 cap.release()  # Release the camera
 cv2.destroyAllWindows()
+
 
