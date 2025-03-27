@@ -6,20 +6,21 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Point.h>
 
+// For defining rectangle for ROI 
 Rect selectRect;
 Point origin;
 Rect result;
-bool select_flag = false;
+bool select_flag = false; 
 bool bRenewROI = false;  // the flag to enable the implementation of KCF algorithm for the new chosen ROI
-bool bBeginKCF = false;
-Mat rgbimage;
-Mat depthimage;
+bool bBeginKCF = false; 
+Mat rgbimage; //store the RGB image
+Mat depthimage; //store the depth image
 float minDist = 0;
 const int &ACTION_ESC = 27;
 
 
 
-
+// To select a ROI 
 void onMouse(int event, int x, int y, int, void *) {
     if (select_flag) {
         selectRect.x = MIN(origin.x, x);
@@ -42,6 +43,7 @@ void onMouse(int event, int x, int y, int, void *) {
     }
 }
 
+// Constructor
 ImageConverter::ImageConverter(ros::NodeHandle &n) {
     KCFTracker tracker(HOG, FIXEDWINDOW, MULTISCALE, LAB);
     // Subscrive to input video feed and publish output video feed
@@ -55,6 +57,7 @@ ImageConverter::ImageConverter(ros::NodeHandle &n) {
 //        namedWindow(DEPTH_WINDOW);
 }
 
+// Destructor
 ImageConverter::~ImageConverter() {
     n.shutdown();
     image_sub_.shutdown();
@@ -65,6 +68,7 @@ ImageConverter::~ImageConverter() {
 //        destroyWindow(DEPTH_WINDOW);
 }
 
+// Resets all tracking-related variables and flags
 void ImageConverter::Reset() {
     bRenewROI = false;
     bBeginKCF = false;
@@ -89,16 +93,36 @@ void ImageConverter::imageCb(const sensor_msgs::ImageConstPtr &msg) {
     cv_ptr->image.copyTo(rgbimage);
     setMouseCallback(RGB_WINDOW, onMouse, 0);
     if (bRenewROI) {
-        if (selectRect.width <= 0 || selectRect.height <= 0) {
+        // Ensure ROI is valid and fully within image boundaries
+        if (selectRect.width <= 0 || selectRect.height <= 0 ||
+            selectRect.x < 0 || selectRect.y < 0 ||
+            selectRect.x + selectRect.width > rgbimage.cols ||
+            selectRect.y + selectRect.height > rgbimage.rows) {
+            ROS_WARN("Invalid ROI selected. Please select a valid region.");
             bRenewROI = false;
             return;
         }
-        tracker.init(selectRect, rgbimage);
-        bBeginKCF = true;
-        bRenewROI = false;
-        enable_get_depth = false;
+       
+        try {
+            tracker.init(selectRect, rgbimage); // Initialize tracker
+            bBeginKCF = true;
+            bRenewROI = false;
+            enable_get_depth = false;
+        } catch (const std::exception &e) {
+            ROS_ERROR("Tracker initialization failed: %s", e.what());
+            bRenewROI = false;
+        }
     }
+    
+    
+    // For visually displaying the tracking result
     if (bBeginKCF) {
+        // Publishing coordinates
+        geometry_msgs::Point msg;
+        msg.x = center_x;
+        msg.y = center_y;
+
+        // For displaying text on RGB image
         enable_get_depth = true;
         result = tracker.update(rgbimage);
         rectangle(rgbimage, result, Scalar(0, 255, 255), 1, 8);
@@ -111,18 +135,14 @@ void ImageConverter::imageCb(const sensor_msgs::ImageConstPtr &msg) {
         text_y.append("Y: ");
         text_y.append(to_string(center_y));
         text_z.append("Z: ");
-
-        // Publishing coordinates
-        geometry_msgs::Point msg;
-        msg.x = center_x;
-        msg.y = center_y;
-
+        
+        // Display the distance
         if ((double)minDist < 0.0) text_z.append("inf");
         else { 
             text_z.append(to_string((double)(minDist)));
             text_z.append("m");
             msg.z = minDist;}
-    
+        
         putText(rgbimage, text_x.c_str(), Point(center_x + 10, center_y - 13), FONT_HERSHEY_SIMPLEX, 0.5,
                 Scalar(0, 0, 255), 1, 8);
         putText(rgbimage, text_y.c_str(), Point(center_x + 10, center_y + 5), FONT_HERSHEY_SIMPLEX, 0.5,
@@ -131,6 +151,7 @@ void ImageConverter::imageCb(const sensor_msgs::ImageConstPtr &msg) {
                 Scalar(255, 0, 0), 1, 8);
         // Publish the coordinates
         coord_pub.publish(msg);
+
     } else rectangle(rgbimage, selectRect, Scalar(0, 0, 255), 2, 8, 0);
     imshow(RGB_WINDOW, rgbimage);
     int action = waitKey(1) & 0xFF;

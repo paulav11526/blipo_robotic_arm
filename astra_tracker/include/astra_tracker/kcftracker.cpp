@@ -96,7 +96,7 @@ KCFTracker::KCFTracker(bool hog, bool fixed_window, bool multiscale, bool lab) {
 
     // Parameters equal in all cases
     lambda = 0.0001;
-    padding = 2.5;
+    padding = 0.1;
     //output_sigma_factor = 0.1;
     output_sigma_factor = 0.125;
 
