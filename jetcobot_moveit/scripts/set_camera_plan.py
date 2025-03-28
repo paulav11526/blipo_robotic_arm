@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+
+# To have an inital camera reading and go to it
+
 import rospy, sys
 from time import sleep
 import moveit_commander
@@ -15,7 +18,7 @@ class Waypoints:
         moveit_commander.roscpp_initialize(sys.argv)
         
         # Initializing the node
-        rospy.init_node('cartesian_plan_py')
+        rospy.init_node('set_camera_plan', anonymous=True)
         scene = PlanningSceneInterface()
 
         self.pos = Pose()
@@ -28,19 +31,19 @@ class Waypoints:
         self.jetcobot = MoveGroupCommander('arm_group')
         # When motion planning fails, re-planning is allowed
         self.jetcobot.allow_replanning(True)
-        self.jetcobot.set_planning_time(50)
+        self.jetcobot.set_planning_time(5)
         # Set number of attempts
-        self.jetcobot.set_num_planning_attempts(20)
+        self.jetcobot.set_num_planning_attempts(10)
         # Set target goal and max velocity and acceleration
         self.jetcobot.set_goal_position_tolerance(0.01)
-        self.jetcobot.set_goal_orientation_tolerance(0.01)
+        self.jetcobot.set_goal_orientation_tolerance(0.1)
         self.jetcobot.set_goal_tolerance(0.01)
         self.jetcobot.set_max_velocity_scaling_factor(1.0)
         self.jetcobot.set_max_acceleration_scaling_factor(1.0)
         
-        # Setting 'init' as the initial pose (home position)
-        rospy.loginfo("Home pose")
-        self.jetcobot.set_named_target("init")
+        # Setting 'vertical' as the initial position
+        rospy.loginfo("Vertical Surfaces")
+        self.jetcobot.set_named_target("vertical")
         self.jetcobot.go()
         sleep(0.5)
 
@@ -59,24 +62,27 @@ class Waypoints:
 
     def wait_for_coordinates(self):
         rospy.loginfo("Waiting for base coordinates...")
-        rospy.wait_for_message("base_coordinates", Point)  # Blocking call
+        msg = rospy.wait_for_message("base_coordinates", Point)  # Blocking call
         while not self.received_coordinates:
-            rospy.sleep(0.1)  # Small delay to prevent CPU overload
+            self.base_callback(msg)  # Small delay to prevent CPU overload
 
     def plan_pose(self, pose):
         # Set the target point
         rospy.loginfo("Setting target pose")
         self.jetcobot.set_pose_target(pose)
         plan = self.jetcobot.plan()
+        rospy.loginfo(f"Planned trajectory: {plan}")
 
-        if not plan or not plan[1]:
+        if not plan or not plan[0]:
             rospy.logwarn("Motion planning failed.")
             return None
         
         planned_trajectory = plan[1] # Contains the planned trajectory
+        rospy.loginfo("Motion planning succeeded.")
+
         return planned_trajectory 
     
-    def plan_waypoints(self, trajectory):
+    ''' def plan_waypoints(self, trajectory):
         if not trajectory or not hasattr(trajectory, 'joint_trajectory'):
             rospy.logwarn("Trajectory not available")
             return []
@@ -84,7 +90,7 @@ class Waypoints:
         
         # Initialize waypoint list
         waypoints = []
-        num_waypoints = 3
+        num_waypoints = 2
         # Get total number of points in trajectory
         total_points = len(trajectory.joint_trajectory.points)
         if total_points == 0:
@@ -114,20 +120,18 @@ class Waypoints:
             self.jetcobot.go(wait=True)
             rospy.loginfo(f"Reached waypoint {i}")
             sleep(0.5)
-
+'''
 
 if __name__ == "__main__":
     run = Waypoints()
     run.wait_for_coordinates()
 
-    trajectory = run.plan_pose(run.pos)
-    if trajectory:
-        waypoints = run.plan_waypoints(trajectory)
-        run.execute(waypoints)
+    plan = run.plan_pose(run.pos)
+    run.jetcobot.execute(plan)
 
+                
 
-
-    #rospy.spin()
-    rospy.sleep(1)
-    moveit_commander.roscpp_shutdown()
-    moveit_commander.os._exit(0)
+    rospy.spin()
+    ##rospy.sleep(1)
+    ##moveit_commander.roscpp_shutdown()
+    ##moveit_commander.os._exit(0)
