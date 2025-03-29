@@ -1,23 +1,23 @@
 <launch>
 
-    <! -- Include robotic arm Launch file -->
+    <!-- Include robotic arm Launch file -->
     <include file="$(find jetcobot_moveit)/launch/jetcobot_moveit.launch" />    
 
-    <! -- Include the camera Launch file -->
-    <include file ="$(find orbbec_camera)/launch/gemini.launch" />
+    <!-- Include the camera Launch file -->
+    <include file="$(find orbbec_camera)/launch/gemini.launch" />
 
-    <! -- Include the KCF Tracker Launch file -->
-    <include file ="$(find astra_tracker)/launch/KCFTracker.launch" />
+    <!-- Include the KCF Tracker Launch file -->
+    <!--<include file="$(find astra_tracker)/launch/KCFTracker.launch" />-->
 
 
-    <! -- Run the physical robot control node -->
-    <node pkg="jetcobot_moveit" type="sync_plan" name="mycobot_reciver" output="screen" />
+    <!-- Run the physical robot control node -->
+    <node pkg="jetcobot_moveit" type="sync_plan" name="mycobot_reciver" output="screen" required="true" />
 
-    <! -- Run the pixel to base transform node -->
-    <node pkg="astra_tracker" type="pixel_to_base" name="pixel_to_base" output="screen" />
+    <!-- Run the pixel to base transform node -->
+    <node pkg="astra_tracker" type="pixel_to_base" name="pixel_to_base" output="screen" required="true"/>
 
-    <! -- Run the motion execution node -->
-    <node pkg="jetcobot_moveit" type="set_camera_plan" name="motion_execution" output="screen" />
+    <!-- Run the motion execution node -->
+    <node pkg="jetcobot_moveit" type="set_camera_plan" name="motion_execution" output="screen" required="true"/>
 
 </launch>
 

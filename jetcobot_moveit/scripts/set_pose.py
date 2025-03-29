@@ -41,9 +41,9 @@ if __name__ == '__main__':
   
     # Back
     # Position
-    pos.position.x = -0.226 
-    pos.position.y = -0.061
-    pos.position.z = 0.3
+    pos.position.x = 0.2801
+    pos.position.y = -0.0368
+    pos.position.z = 0.43826
     # Orientation
     pos.orientation.x = -0.008
     pos.orientation.y = -0.591

@@ -41,11 +41,30 @@ class Waypoints:
         self.jetcobot.set_max_velocity_scaling_factor(1.0)
         self.jetcobot.set_max_acceleration_scaling_factor(1.0)
         
-        # Setting 'vertical' as the initial position
+        '''# Setting 'vertical' as the initial position
         rospy.loginfo("Vertical Surfaces")
         self.jetcobot.set_named_target("vertical")
         self.jetcobot.go()
-        sleep(0.5)
+        sleep(0.5)'''
+        
+        # Setting 'bottom vertical' position
+        rospy.loginfo("Bottom vertical position")
+        joints = [-1.568, 0.008, 1.407, -1.391, -0.000, 0.006]
+        self.jetcobot.set_joint_value_target(joints)
+        # Execute multiple times to improve the success rate
+        for i in range(5):
+            # Exercise planning
+            plan = self.jetcobot.plan()
+            # print("plan = ",plan)
+            if plan[0]==True:
+                rospy.loginfo("plan success")
+                # Run after the plan is successful
+                self.jetcobot.execute(plan[1])
+                break
+            else:
+                rospy.loginfo("plan error")
+	
+        
 
 
     def base_callback(self, msg):
@@ -70,6 +89,7 @@ class Waypoints:
         # Set the target point
         rospy.loginfo("Setting target pose")
         self.jetcobot.set_pose_target(pose)
+        rospy.loginfo(f"Setting pose with coordinates: {pose}")
         plan = self.jetcobot.plan()
         rospy.loginfo(f"Planned trajectory: {plan}")
 
@@ -82,45 +102,6 @@ class Waypoints:
 
         return planned_trajectory 
     
-    ''' def plan_waypoints(self, trajectory):
-        if not trajectory or not hasattr(trajectory, 'joint_trajectory'):
-            rospy.logwarn("Trajectory not available")
-            return []
-        
-        
-        # Initialize waypoint list
-        waypoints = []
-        num_waypoints = 2
-        # Get total number of points in trajectory
-        total_points = len(trajectory.joint_trajectory.points)
-        if total_points == 0:
-            rospy.logwarn("No points in trajectory")
-            return []
-        
-        waypoint_interval = total_points // num_waypoints
-        rospy.loginfo(f"Total number of points in the trajectory: {total_points}")
-        rospy.loginfo(f"Waypoint interval: {waypoint_interval}")
-
-        for i in range(0 , total_points, waypoint_interval):
-            point = trajectory.joint_trajectory.points[i]
-            # Set waypoint data and add it to the waypoint list
-            waypoints.append(deepcopy(point.positions))
-        
-
-        #rospy.loginfo(f"Waypoints: {waypoints}")     
-        return waypoints   
-
-    def execute(self, waypoints):
-        if not waypoints:
-            rospy.logwarn("No waypoints available")
-            return
-        
-        for i in range(len(waypoints)):
-            self.jetcobot.set_joint_value_target(waypoints[i])
-            self.jetcobot.go(wait=True)
-            rospy.loginfo(f"Reached waypoint {i}")
-            sleep(0.5)
-'''
 
 if __name__ == "__main__":
     run = Waypoints()
@@ -128,6 +109,13 @@ if __name__ == "__main__":
 
     plan = run.plan_pose(run.pos)
     run.jetcobot.execute(plan)
+
+    if plan is None:
+        run.wait_for_coordinates()
+
+        plan = run.plan_pose(run.pos)
+        run.jetcobot.execute(plan)        
+
 
                 
 
