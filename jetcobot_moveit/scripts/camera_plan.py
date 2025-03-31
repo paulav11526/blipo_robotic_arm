@@ -37,7 +37,7 @@ class MotionExecution:
         self.jetcobot.set_num_planning_attempts(10)
         # Set target goal and max velocity and acceleration
         self.jetcobot.set_goal_position_tolerance(0.001)
-        self.jetcobot.set_goal_orientation_tolerance(0.01)
+        #self.jetcobot.set_goal_orientation_tolerance(0.01)
         #self.jetcobot.set_goal_tolerance(0.001)
         self.jetcobot.set_max_velocity_scaling_factor(1.0)
         self.jetcobot.set_max_acceleration_scaling_factor(1.0)
