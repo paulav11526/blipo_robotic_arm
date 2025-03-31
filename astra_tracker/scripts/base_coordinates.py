@@ -60,10 +60,11 @@ class PixelToBase:
             
         else:
             #z_actual = (msg.z * 0.8090) - 0.0342 # Depth correction (calibration 1)
-            z_actual = (msg.z * 0.8016) - 0.0041 # Depth correction (calibration 2)
+            #z_actual = (msg.z * 0.8016) - 0.0041 # Depth correction (calibration 2)
             #z_actual = (np.square(msg.z) * 0.0235) + (msg.z * 0.7776) + 0.0017 # Depth correction (calibration 3)
+            z_actual = (np.square(msg.z) * -0.1816) + (msg.z * 1.0148) - 0.0434 # Depth correction (calibration 4)
             self.latest_pixel = (msg.x, msg.y, z_actual)  # Store pixel coordinates
-            rospy.loginfo(f'z_actual: {z_actual}')
+            rospy.loginfo(f'z_actual with #4: {z_actual}')\
 
        
     def pixel_to_base_transform(self, u, v, Z_c, T_bc):

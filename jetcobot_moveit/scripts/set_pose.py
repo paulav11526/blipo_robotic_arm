@@ -25,10 +25,10 @@ if __name__ == '__main__':
     # Number of planning attempts
     jetcobot.set_num_planning_attempts(10)
     # Set the allowable error of position (unit: meters) and attitude (unit: radians)
-    jetcobot.set_goal_position_tolerance(0.01)
-    jetcobot.set_goal_orientation_tolerance(0.01)
+    jetcobot.set_goal_position_tolerance(0.001)
+    jetcobot.set_goal_orientation_tolerance(0.001)
     # Set allowable target error
-    jetcobot.set_goal_tolerance(0.01)
+    jetcobot.set_goal_tolerance(0.001)
     # Set maximum allowed speed and acceleration
     jetcobot.set_max_velocity_scaling_factor(0.1)
     jetcobot.set_max_acceleration_scaling_factor(0.1)

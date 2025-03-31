@@ -35,9 +35,9 @@ class Waypoints:
         # Set number of attempts
         self.jetcobot.set_num_planning_attempts(10)
         # Set target goal and max velocity and acceleration
-        self.jetcobot.set_goal_position_tolerance(0.01)
-        self.jetcobot.set_goal_orientation_tolerance(0.1)
-        self.jetcobot.set_goal_tolerance(0.01)
+        self.jetcobot.set_goal_position_tolerance(0.001)
+        self.jetcobot.set_goal_orientation_tolerance(0.01)
+        self.jetcobot.set_goal_tolerance(0.001)
         self.jetcobot.set_max_velocity_scaling_factor(1.0)
         self.jetcobot.set_max_acceleration_scaling_factor(1.0)
         
@@ -49,27 +49,14 @@ class Waypoints:
         
         # Setting 'bottom vertical' position
         rospy.loginfo("Bottom vertical position")
-        joints = [-1.568, 0.008, 1.407, -1.391, -0.000, 0.006]
-        self.jetcobot.set_joint_value_target(joints)
-        # Execute multiple times to improve the success rate
-        for i in range(5):
-            # Exercise planning
-            plan = self.jetcobot.plan()
-            # print("plan = ",plan)
-            if plan[0]==True:
-                rospy.loginfo("Initial position success")
-                # Run after the plan is successful
-                self.jetcobot.execute(plan[1])
-                break
-            else:
-                rospy.loginfo("Initial position error")
-	
-        
+        self.jetcobot.set_named_target("bottom vertical")
+        self.jetcobot.go()
+        sleep(0.5)
 
 
     def base_callback(self, msg):
         # Store received base coordinates
-        rospy.loginfo("Base coordinates received")
+        #rospy.loginfo("Base coordinates received")
         self.pos.position.x = msg.x
         self.pos.position.y = msg.y
         self.pos.position.z = msg.z
@@ -83,8 +70,10 @@ class Waypoints:
 
     def plan_pose(self):
         # Set the target point
+        # Get current orientation
+        self.pos.orientation = self.jetcobot.get_current_pose().pose.orientation
         rospy.loginfo("Setting target pose")
-        self.jetcobot.set_position_target(self.xyz)
+        self.jetcobot.set_pose_target(self.pos)
         rospy.loginfo(f"Setting position with coordinates: {self.pos}")
         plan = self.jetcobot.plan()
         rospy.loginfo(f"Planned trajectory: {plan}")
@@ -96,13 +85,21 @@ class Waypoints:
         return plan[1]
     
     def execute_motion(self):
-        while True:
+        while not rospy.is_shutdown():
             self.wait_for_coordinates()
             plan = self.plan_pose()
             if plan:
                 self.jetcobot.execute(plan)
                 rospy.loginfo("Motion executed successfully.")
-                break
+                rospy.sleep(3)
+                # Reset the flag to wait for new coordinates
+                self.received_coordinates = False
+                rospy.loginfo("Bottom vertical position")
+                self.jetcobot.set_named_target("bottom vertical")
+                self.jetcobot.go()
+                sleep(3)
+
+                #break
             else:
                 rospy.logwarn("Motion planning failed. Retrying...")
                 self.received_coordinates = False  # Reset the flag to wait for new coordinates
