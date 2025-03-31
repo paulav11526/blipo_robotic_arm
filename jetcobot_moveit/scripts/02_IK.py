@@ -30,6 +30,12 @@ if __name__ == '__main__':
     jetcobot.go()
     sleep(1)
 
+    jetcobot.set_random_target()
+    jetcobot.go()
+    sleep(1)
+    jetcobot.get_current_pose()
+    rospy.loginfo("Current pose: %s", jetcobot.get_current_pose())
+
     # Define target pose
     pos = Pose()
     pos.position.x = 0.34615096

@@ -57,12 +57,12 @@ class Waypoints:
             plan = self.jetcobot.plan()
             # print("plan = ",plan)
             if plan[0]==True:
-                rospy.loginfo("plan success")
+                rospy.loginfo("Initial position success")
                 # Run after the plan is successful
                 self.jetcobot.execute(plan[1])
                 break
             else:
-                rospy.loginfo("plan error")
+                rospy.loginfo("Initial position error")
 	
         
 
@@ -73,53 +73,41 @@ class Waypoints:
         self.pos.position.x = msg.x
         self.pos.position.y = msg.y
         self.pos.position.z = msg.z
-        self.pos.orientation.x = 0.0
-        self.pos.orientation.y = 0.0
-        self.pos.orientation.z = 0.0
-        self.pos.orientation.w = 1.0
+        self.xyz = [self.pos.position.x, self.pos.position.y, self.pos.position.z]
         self.received_coordinates = True
 
     def wait_for_coordinates(self):
         rospy.loginfo("Waiting for base coordinates...")
-        msg = rospy.wait_for_message("base_coordinates", Point)  # Blocking call
         while not self.received_coordinates:
-            self.base_callback(msg)  # Small delay to prevent CPU overload
+            rospy.sleep(0.1)
 
-    def plan_pose(self, pose):
+    def plan_pose(self):
         # Set the target point
         rospy.loginfo("Setting target pose")
-        self.jetcobot.set_pose_target(pose)
-        rospy.loginfo(f"Setting pose with coordinates: {pose}")
+        self.jetcobot.set_position_target(self.xyz)
+        rospy.loginfo(f"Setting position with coordinates: {self.pos}")
         plan = self.jetcobot.plan()
         rospy.loginfo(f"Planned trajectory: {plan}")
 
         if not plan or not plan[0]:
             rospy.logwarn("Motion planning failed.")
             return None
-        
-        planned_trajectory = plan[1] # Contains the planned trajectory
-        rospy.loginfo("Motion planning succeeded.")
 
-        return planned_trajectory 
+        return plan[1]
     
+    def execute_motion(self):
+        while True:
+            self.wait_for_coordinates()
+            plan = self.plan_pose()
+            if plan:
+                self.jetcobot.execute(plan)
+                rospy.loginfo("Motion executed successfully.")
+                break
+            else:
+                rospy.logwarn("Motion planning failed. Retrying...")
+                self.received_coordinates = False  # Reset the flag to wait for new coordinates
 
 if __name__ == "__main__":
     run = Waypoints()
-    run.wait_for_coordinates()
-
-    plan = run.plan_pose(run.pos)
-    run.jetcobot.execute(plan)
-
-    if plan is None:
-        run.wait_for_coordinates()
-
-        plan = run.plan_pose(run.pos)
-        run.jetcobot.execute(plan)        
-
-
-                
-
+    run.execute_motion()
     rospy.spin()
-    ##rospy.sleep(1)
-    ##moveit_commander.roscpp_shutdown()
-    ##moveit_commander.os._exit(0)

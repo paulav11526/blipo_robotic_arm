@@ -41,16 +41,14 @@ if __name__ == '__main__':
   
     # Back
     # Position
-    pos.position.x = 0.2801
-    pos.position.y = -0.0368
-    pos.position.z = 0.43826
-    # Orientation
-    pos.orientation.x = -0.008
-    pos.orientation.y = -0.591
-    pos.orientation.z = -0.004
-    pos.orientation.w = 0.807
+    pos.position.x = -0.04502323
+    pos.position.y = -0.85764499
+    pos.position.z = 1.38282051
+
+
+    xyz = [pos.position.x, pos.position.y, pos.position.z]
     # Setting target
-    jetcobot.set_pose_target(pos)
+    jetcobot.set_position_target(xyz)
     plan = jetcobot.plan()
     # print("plan = ",plan)
     if plan[0]==True:
