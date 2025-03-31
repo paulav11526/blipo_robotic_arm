@@ -46,8 +46,9 @@ class MotionExecution:
         self.oc = OrientationConstraint()
         self.oc.header.frame_id = "base_link"
         self.oc.link_name = "end_effector_link"
-        #self.oc.absolute_x_axis_tolerance = 0.5
+        self.oc.absolute_x_axis_tolerance = 0.5
         self.oc.absolute_y_axis_tolerance = 0.5
+        self.oc.absolute_z_axis_tolerance = 0.015
         self.oc.weight = 1.0
 
 
