@@ -14,7 +14,7 @@ from moveit_commander import MoveGroupCommander, PlanningSceneInterface
 from moveit_msgs.msg import Constraints, OrientationConstraint
 from tf.transformations import quaternion_from_euler
 
-class Waypoints:
+class MotionExecution:
     def __init__(self):
         moveit_commander.roscpp_initialize(sys.argv)
         
@@ -46,8 +46,8 @@ class Waypoints:
         self.oc = OrientationConstraint()
         self.oc.header.frame_id = "base_link"
         self.oc.link_name = "end_effector_link"
-        self.oc.absolute_x_axis_tolerance = 0.1
-        self.oc.absolute_y_axis_tolerance = 0.1
+        #self.oc.absolute_x_axis_tolerance = 0.5
+        self.oc.absolute_y_axis_tolerance = 0.5
         self.oc.weight = 1.0
 
 
@@ -99,6 +99,8 @@ class Waypoints:
         return plan[1]
     
     def execute_motion(self):
+        # Set the initial position of the robot
+        self.home_position()
         while not rospy.is_shutdown():
             self.wait_for_coordinates()
             plan = self.plan_pose()
@@ -117,6 +119,6 @@ class Waypoints:
                 self.received_coordinates = False  # Reset the flag to wait for new coordinates
 
 if __name__ == "__main__":
-    run = Waypoints()
+    run = MotionExecution()
     run.execute_motion()
     rospy.spin()

@@ -1,0 +1,9 @@
+<launch>
+
+    <!-- Run pixel to base transformation -->
+    <node pkg="astra_tracker" type="base_coordinates.py" name="pixel_transformation" output="screen" launch-prefix="python3" />
+
+    <!-- Run motion execution -->
+    <node pkg="jetcobot_moveit" type="camera_plan.py" name="motion_execution" output="screen" launch-prefix="python3" />
+
+</launch>
