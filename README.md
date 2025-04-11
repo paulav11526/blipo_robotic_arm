@@ -7,7 +7,6 @@ The goal of the project is to control the arm and perform contact-based inspecti
 ## Features
 - **ROS**: Blipo is fully integrated with ROS for control.
 - **Camera Control**: The system uses vision for precise targeting
-- **PID Control**: A basic PID controller is implemented
 
 ## Requirements 
 - Jetson Orin Nano with Ubuntu 20.04 LTS
